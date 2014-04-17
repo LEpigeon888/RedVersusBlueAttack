@@ -30,14 +30,15 @@
 				<Option compiler="gnu_gcc_48_compiler" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-DSFML_STATIC" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-lsfml-audio" />
-					<Add option="-lsfml-network" />
-					<Add option="-lsfml-graphics" />
-					<Add option="-lsfml-window" />
-					<Add option="-lsfml-system" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-audio-s.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-network-s.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-graphics-s.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-window-s.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-system-s.a" />
 				</Linker>
 			</Target>
 		</Build>
