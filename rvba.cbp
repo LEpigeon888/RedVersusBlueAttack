@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="rvba" />
+		<Option pch_mode="2" />
+		<Option compiler="gnu_gcc_48_compiler" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/rvba" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gnu_gcc_48_compiler" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DSFML_STATIC" />
+				</Compiler>
+				<Linker>
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-audio-s-d.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-network-s-d.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-graphics-s-d.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-window-s-d.a" />
+					<Add library="C:\Program Files (x86)\SFML.snap\lib\static-std\libsfml-system-s-d.a" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/rvba" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gnu_gcc_48_compiler" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-lsfml-audio" />
+					<Add option="-lsfml-network" />
+					<Add option="-lsfml-graphics" />
+					<Add option="-lsfml-window" />
+					<Add option="-lsfml-system" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-pedantic" />
+			<Add option="-std=c++11" />
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add directory="C:/Program Files (x86)/SFML.snap/include" />
+		</Compiler>
+		<Linker>
+			<Add directory="C:/Program Files (x86)/SFML.snap/lib" />
+		</Linker>
+		<Unit filename="buttonWidget.cpp" />
+		<Unit filename="buttonWidget.hpp" />
+		<Unit filename="caseType.cpp" />
+		<Unit filename="caseType.hpp" />
+		<Unit filename="editLevelStat.cpp" />
+		<Unit filename="editLevelStat.hpp" />
+		<Unit filename="errorDisplay.cpp" />
+		<Unit filename="errorDisplay.hpp" />
+		<Unit filename="errorManager.cpp" />
+		<Unit filename="errorManager.hpp" />
+		<Unit filename="externalServer.cpp" />
+		<Unit filename="externalServer.hpp" />
+		<Unit filename="game.cpp" />
+		<Unit filename="game.hpp" />
+		<Unit filename="gameState.hpp" />
+		<Unit filename="gameStateStack.cpp" />
+		<Unit filename="gameStateStack.hpp" />
+		<Unit filename="global.cpp" />
+		<Unit filename="global.hpp" />
+		<Unit filename="internalServer.cpp" />
+		<Unit filename="internalServer.hpp" />
+		<Unit filename="level.cpp" />
+		<Unit filename="level.hpp" />
+		<Unit filename="main.cpp" />
+		<Unit filename="mainMenuState.cpp" />
+		<Unit filename="mainMenuState.hpp" />
+		<Unit filename="networkAudioStream.cpp" />
+		<Unit filename="networkAudioStream.hpp" />
+		<Unit filename="networkRecorder.cpp" />
+		<Unit filename="networkRecorder.hpp" />
+		<Unit filename="optionState.cpp" />
+		<Unit filename="optionState.hpp" />
+		<Unit filename="playState.cpp" />
+		<Unit filename="playState.hpp" />
+		<Unit filename="server.cpp" />
+		<Unit filename="server.hpp" />
+		<Unit filename="serverState.cpp" />
+		<Unit filename="serverState.hpp" />
+		<Unit filename="soundManager.cpp" />
+		<Unit filename="soundManager.hpp" />
+		<Unit filename="staticTray.cpp" />
+		<Unit filename="staticTray.hpp" />
+		<Unit filename="structForGame.hpp" />
+		<Unit filename="textWidget.cpp" />
+		<Unit filename="textWidget.hpp" />
+		<Unit filename="typeForGame.hpp" />
+		<Unit filename="widget.hpp" />
+		<Unit filename="widgetList.cpp" />
+		<Unit filename="widgetList.hpp" />
+		<Unit filename="widgetManager.cpp" />
+		<Unit filename="widgetManager.hpp" />
+		<Unit filename="widgetTextBox.cpp" />
+		<Unit filename="widgetTextBox.hpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
