@@ -10,6 +10,7 @@ externalServerClass::externalServerClass(std::string ip, int port)
     thisGame.currentAction.action = NOT_SET;
     thisGame.currentAction.player = RED;
     playerPlay = NO_PLAYER;
+    listOfStream.resize(4);
     socket.setBlocking(true);
     if(socket.connect(ip, port) != sf::Socket::Status::Done)
     {
@@ -94,6 +95,10 @@ void externalServerClass::receivePacket()
 
                         numberMoveNumber = number;
                     }
+                    else if(tmpType == TYPE_AUDIO)
+                    {
+                        playSound(packet);
+                    }
                 }
                 else
                 {
@@ -108,6 +113,11 @@ void externalServerClass::sendPacket()
 {
     while(running)
     {
+        while(listPacket.empty() == true && running == true)
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            condVar.wait_for(lock, std::chrono::seconds(TIMEOUT));
+        }
         if(listPacket.empty() == false)
         {
             sf::Socket::Status stat = socket.send(listPacket.front());
@@ -115,18 +125,10 @@ void externalServerClass::sendPacket()
             {
                 listPacket.pop_front();
             }
-            else if(stat == sf::Socket::Status::NotReady)
-            {
-                sf::sleep(sf::seconds(TIME_SLEEP));
-            }
-            else
+            else if(stat != sf::Socket::Status::NotReady)
             {
                 gameReady = false;
             }
-        }
-        else
-        {
-            sf::sleep(sf::seconds(TIME_SLEEP));
         }
     }
 }
@@ -285,7 +287,7 @@ void externalServerClass::clickTo(int x, int y)
     packet << static_cast<sf::Uint8>(CLICK_TO);
     packet << static_cast<sf::Uint8>(x);
     packet << static_cast<sf::Uint8>(y);
-    listPacket.push_back(packet);
+    addNewPacket(packet);
 }
 
 int externalServerClass::getMoveForPlayer()
@@ -302,5 +304,54 @@ void externalServerClass::playerLeave()
 {
     sf::Packet packet;
     packet << static_cast<sf::Uint8>(I_BELIEVE_I_CAN_LEAVE);
+    addNewPacket(packet);
+}
+
+void externalServerClass::startRecord()
+{
+    if(recorder.get() == nullptr)
+    {
+        recorder.reset(new networkRecorderClass(std::bind(&externalServerClass::addNewPacket, this, std::placeholders::_1)));
+        recorder->start();
+    }
+}
+
+void externalServerClass::stopRecord()
+{
+    if(recorder.get() != nullptr)
+    {
+        recorder->stop();
+        recorder.reset();
+    }
+}
+
+void externalServerClass::playSound(sf::Packet& packet)
+{
+    typePlayer player;
+    sf::Uint8 thePlayer;
+    packet >> thePlayer;
+    player = static_cast<typePlayer>(thePlayer);
+
+    if(listOfStream[player].get() != nullptr)
+    {
+        if(listOfStream[player]->getStatus() == sf::SoundStream::Stopped)
+        {
+            listOfStream[player].reset();
+        }
+    }
+
+    if(listOfStream[player].get() == nullptr)
+    {
+        listOfStream[player].reset(new networkAudioStreamClass);
+        listOfStream[player]->start();
+    }
+
+    listOfStream[player]->addNewPacket(packet);
+}
+
+void externalServerClass::addNewPacket(sf::Packet& packet)
+{
+    std::unique_lock<std::mutex> lock(mutex);
     listPacket.push_back(packet);
+    condVar.notify_one();
 }

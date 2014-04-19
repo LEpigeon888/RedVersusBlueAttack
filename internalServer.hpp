@@ -21,9 +21,11 @@ public:
     int getTotalPlayer();
     int getMoveForPlayer();
     int getMoveForNumber();
+    sf::Packet getPacketForMap();
     void playerLeave();
     void playerLeave(typePlayer thisPlayer);
-    sf::Packet getPacketForMap();
+    void startRecord();
+    void stopRecord();
 public:
     bool endOfGame;
     sf::Mutex mutex;

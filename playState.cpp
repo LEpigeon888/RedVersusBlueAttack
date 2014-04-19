@@ -111,6 +111,17 @@ void playStateClass::update()
                 global::gameStateStack.set(new mainMenuStateClass);
                 return;
             }
+            else if(event.key.code == sf::Keyboard::T)
+            {
+                server->startRecord();
+            }
+        }
+        else if(event.type == sf::Event::KeyReleased)
+        {
+            if(event.key.code == sf::Keyboard::T)
+            {
+                server->stopRecord();
+            }
         }
     }
 

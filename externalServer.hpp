@@ -4,11 +4,14 @@
 #include <SFML/Network.hpp>
 #include <memory>
 #include <list>
+#include <condition_variable>
+#include <mutex>
 
 #include "server.hpp"
 #include "structForGame.hpp"
+#include "networkRecorder.hpp"
+#include "networkAudioStream.hpp"
 
-#define TIME_SLEEP 0.05
 #define TIMEOUT 1
 
 class externalServerClass : public serverClass
@@ -27,6 +30,10 @@ public:
     int getMoveForPlayer();
     int getMoveForNumber();
     void playerLeave();
+    void startRecord();
+    void stopRecord();
+    void playSound(sf::Packet& packet);
+    void addNewPacket(sf::Packet& packet);
 private:
     bool running;
     bool ready;
@@ -38,6 +45,10 @@ private:
     std::list<sf::Packet> listPacket;
     sf::TcpSocket socket;
     sf::SocketSelector selector;
+    std::unique_ptr<networkRecorderClass> recorder;
+    std::deque<std::unique_ptr<networkAudioStreamClass>> listOfStream;
+    std::mutex mutex;
+    std::condition_variable condVar;
 };
 
 #endif

@@ -578,3 +578,13 @@ void internalServerClass::playerLeave(typePlayer thisPlayer)
     }
     checkWin();
 }
+
+void internalServerClass::startRecord()
+{
+    return;
+}
+
+void internalServerClass::stopRecord()
+{
+    return;
+}

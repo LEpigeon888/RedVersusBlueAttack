@@ -4,13 +4,14 @@
 #include <SFML/Network.hpp>
 #include <memory>
 #include <list>
+#include <condition_variable>
+#include <mutex>
 
 #include "gameState.hpp"
 #include "internalServer.hpp"
 #include "structForGame.hpp"
 #include "widgetManager.hpp"
 
-#define TIME_SLEEP 0.05
 #define TIMEOUT 1
 
 class textWidgetClass;
@@ -36,6 +37,8 @@ public:
     void waitConnection();
     void sendPacket();
     void receivePacket();
+    void sendAudioForAllExcept(typePlayer thisPlayer, sf::Packet& packet);
+    void addNewPacket(sf::Packet& packet, client& thisClient);
     std::string intToStr(int thisInt);
 private:
     sf::TcpListener listener;
@@ -61,6 +64,9 @@ private:
     textWidgetClass* actionPlayer;
     textWidgetClass* nbPlayer;
     textWidgetClass* nbSpec;
+    std::mutex mutex;
+    std::condition_variable condVar;
+    bool newPacketAreAvailable;
 };
 
 #endif

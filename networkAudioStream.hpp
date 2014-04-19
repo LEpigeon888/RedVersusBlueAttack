@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <list>
+#include <thread>
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 
@@ -13,6 +14,7 @@ class networkAudioStreamClass : public sf::SoundStream
 {
 public:
     networkAudioStreamClass();
+    ~networkAudioStreamClass();
     void start();
     void addNewPacket(sf::Packet& packet);
 private:
@@ -27,6 +29,7 @@ private:
     std::list<sf::Packet> listOfPacket;
     std::mutex stdMutex;
     std::condition_variable condVar;
+    std::thread threadForReceiveLoop;
 };
 
 #endif

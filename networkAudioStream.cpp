@@ -10,12 +10,22 @@ networkAudioStreamClass::networkAudioStreamClass()
     initialize(1, 44100);
 }
 
+networkAudioStreamClass::~networkAudioStreamClass()
+{
+    hasFinished = false;
+    condVar.notify_one();
+    if(threadForReceiveLoop.joinable() == true)
+    {
+        threadForReceiveLoop.join();
+    }
+}
+
 void networkAudioStreamClass::start()
 {
     if(hasFinished == false)
     {
         play();
-        receiveLoop();
+        threadForReceiveLoop = std::thread(&networkAudioStreamClass::receiveLoop, this);
     }
     else
     {
@@ -27,6 +37,7 @@ void networkAudioStreamClass::addNewPacket(sf::Packet& packet)
 {
     std::unique_lock<std::mutex> lock(stdMutex);
     listOfPacket.push_back(packet);
+    condVar.notify_one();
 }
 
 bool networkAudioStreamClass::onGetData(sf::SoundStream::Chunk& data)
@@ -46,7 +57,7 @@ bool networkAudioStreamClass::onGetData(sf::SoundStream::Chunk& data)
         tempBuffer.assign(samples.begin() + offset, samples.end());
     }
 
-    data.samples     = &tempBuffer[0];
+    data.samples = &tempBuffer[0];
     data.sampleCount = tempBuffer.size();
 
     offset += tempBuffer.size();
@@ -79,8 +90,8 @@ void networkAudioStreamClass::receiveLoop()
 
             if(theType == AUDIO_STREAM)
             {
-                const sf::Int16* newSamples = reinterpret_cast<const sf::Int16*>(static_cast<const char*>(listOfPacket.back().getData()) + 2);
-                std::size_t sampleCount = (listOfPacket.back().getDataSize() - 2) / sizeof(sf::Int16);
+                const sf::Int16* newSamples = reinterpret_cast<const sf::Int16*>(static_cast<const char*>(listOfPacket.back().getData()) + 3);
+                std::size_t sampleCount = (listOfPacket.back().getDataSize() - 3) / sizeof(sf::Int16);
 
                 {
                     sf::Lock lock(mutex);

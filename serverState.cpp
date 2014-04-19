@@ -1,11 +1,12 @@
 #include <sstream>
+#include <thread>
 
 #include "serverState.hpp"
 #include "global.hpp"
 #include "level.hpp"
 #include "mainMenuState.hpp"
 #include "textWidget.hpp"
-#include <iostream>
+
 serverStateClass::serverStateClass(int numPort, std::string pathToLevel) : server(pathToLevel)
 {
     widgetClass* listForType;
@@ -19,6 +20,7 @@ serverStateClass::serverStateClass(int numPort, std::string pathToLevel) : serve
     currentAction.player = RED;
     running = true;
     playerReady = false;
+    newPacketAreAvailable = false;
     numberOfPlayer = 0;
     numberOfSpectator = 0;
     numberMoveTotal = 0;
@@ -248,7 +250,7 @@ void serverStateClass::sendToAll(sf::Packet& packet)
 {
     for(std::shared_ptr<client>& ite : listClientMainThread)
     {
-        ite->listPacket.push_back(packet);
+        addNewPacket(packet, *ite);
     }
 }
 
@@ -259,6 +261,7 @@ void serverStateClass::waitConnection()
     if(stat == sf::Socket::Done)
     {
         sf::Packet packet;
+        sf::Packet packetForMap;
         sf::Packet packetMoveTotal;
         sf::Packet packetMoveNumber;
         packet << static_cast<sf::Uint8>(YOU_ARE);
@@ -295,27 +298,33 @@ void serverStateClass::waitConnection()
         myWidgetManager.widgetHasChanged();
 
         packet << static_cast<sf::Uint8>(newClient->player);
+        packetForMap = server.getPacketForMap();
+
         listClientMainThread.push_back(std::make_shared<client>());
         listClientMainThread.back().reset(newClient.release());
         listClientSendThread.push_back(listClientMainThread.back());
         listClientReceiveThread.push_back(listClientMainThread.back());
-        listClientMainThread.back()->listPacket.push_back(packet);
-        listClientMainThread.back()->listPacket.push_back(server.getPacketForMap());
-        listClientMainThread.back()->listPacket.push_back(packetMoveTotal);
-        listClientMainThread.back()->listPacket.push_back(packetMoveNumber);
+        addNewPacket(packet, *listClientMainThread.back());
+        addNewPacket(packetForMap, *listClientMainThread.back());
+        addNewPacket(packetMoveTotal, *listClientMainThread.back());
+        addNewPacket(packetMoveNumber, *listClientMainThread.back());
     }
 }
 
 void serverStateClass::sendPacket()
 {
-    bool sendThisLoop = false;
     while(running == true)
     {
+        bool checkPacket = true;
+        while(newPacketAreAvailable == false && running == true)
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            condVar.wait_for(lock, std::chrono::seconds(TIMEOUT));
+        }
         for(std::list<std::shared_ptr<client>>::iterator ite = listClientSendThread.begin(); ite != listClientSendThread.end(); )
         {
             if((*ite)->listPacket.empty() == false)
             {
-                sendThisLoop = true;
                 sf::Socket::Status stat = (*ite)->socket.send((*ite)->listPacket.front());
                 if(stat == sf::Socket::Status::Done)
                 {
@@ -325,6 +334,10 @@ void serverStateClass::sendPacket()
                 {
                     (*ite)->isConnected = false;
                 }
+                else
+                {
+                    checkPacket = false;
+                }
             }
             if((*ite)->isConnected == false)
             {
@@ -333,11 +346,23 @@ void serverStateClass::sendPacket()
             }
             ++ite;
         }
-        if(sendThisLoop == false)
+        if(checkPacket == true)
         {
-            sf::sleep(sf::seconds(TIME_SLEEP));
+            std::unique_lock<std::mutex> lock(mutex);
+            newPacketAreAvailable = false;
+            for(std::shared_ptr<client>& ite : listClientSendThread)
+            {
+                if(ite->listPacket.empty() == false)
+                {
+                    newPacketAreAvailable = true;
+                    break;
+                }
+            }
         }
-        sendThisLoop = false;
+        else
+        {
+            std::this_thread::yield();
+        }
     }
 }
 
@@ -368,6 +393,10 @@ void serverStateClass::receivePacket()
                         {
                             server.playerLeave((*ite)->player);
                         }
+                        else if(tmpType == TYPE_AUDIO)
+                        {
+                            sendAudioForAllExcept((*ite)->player, packet);
+                        }
                     }
                     else if(stat != sf::Socket::Status::NotReady)
                     {
@@ -383,6 +412,29 @@ void serverStateClass::receivePacket()
             }
         }
     }
+}
+
+void serverStateClass::sendAudioForAllExcept(typePlayer thisPlayer, sf::Packet& packet)
+{
+    sf::Packet newPacket;
+    newPacket << static_cast<sf::Uint8>(TYPE_AUDIO);
+    newPacket << static_cast<sf::Uint8>(thisPlayer);
+    newPacket.append(static_cast<const char*>(packet.getData()) + 1, packet.getDataSize() - 1);
+    for(std::shared_ptr<client>& ite : listClientMainThread)
+    {
+        if(ite->player != thisPlayer)
+        {
+            addNewPacket(newPacket, *ite);
+        }
+    }
+}
+
+void serverStateClass::addNewPacket(sf::Packet& packet, client& thisClient)
+{
+    std::unique_lock<std::mutex> lock(mutex);
+    thisClient.listPacket.push_back(packet);
+    newPacketAreAvailable = true;
+    condVar.notify_one();
 }
 
 std::string serverStateClass::intToStr(int thisInt)

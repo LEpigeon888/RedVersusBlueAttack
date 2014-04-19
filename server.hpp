@@ -22,6 +22,8 @@ public:
     virtual int getMoveForPlayer() = 0;
     virtual int getMoveForNumber() = 0;
     virtual void playerLeave() = 0;
+    virtual void startRecord() = 0;
+    virtual void stopRecord() = 0;
 protected:
     theGame thisGame;
     staticTrayClass staticTray;
